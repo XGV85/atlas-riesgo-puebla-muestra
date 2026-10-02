@@ -28,11 +28,11 @@ body{
 .barra{
   position:fixed; top:0; left:0; right:0; z-index:40; height:46px;
   background:var(--morado); color:#fff; display:flex; align-items:center;
-  padding:0 22px; gap:14px; font-size:12.5px;
+  padding:0 22px; gap:14px; font-size:12.5px; overflow:hidden;
 }
 .barra .doc{font-family:var(--media); letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .barra .sep{opacity:.5}
-.barra .aqui{opacity:.95; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.barra .aqui{opacity:.95; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
 .barra .ed{margin-left:auto; opacity:.8; white-space:nowrap}
 .btn-barra{
   font-family:var(--texto); font-size:12px; color:#fff; background:rgba(255,255,255,.14);
@@ -122,7 +122,7 @@ blockquote cite{display:block; margin-top:10px; font-family:var(--texto); font-s
 .destacado b{font-family:var(--media); font-weight:400}
 
 /* ---------- comparativa de un vistazo ---------- */
-.comparativa{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:34px; margin:4px 0 0}
+.comparativa{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(310px,100%),1fr)); gap:34px; margin:4px 0 0}
 .comparativa .t{font-family:var(--media); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--morado); margin:0 0 14px; padding-bottom:9px; border-bottom:2px solid var(--morado)}
 .rank{list-style:none; margin:0; padding:0; counter-reset:r}
 .rank li{counter-increment:r; display:grid; grid-template-columns:20px 1fr; gap:9px; margin-bottom:11px; align-items:baseline}
@@ -140,7 +140,7 @@ blockquote cite{display:block; margin-top:10px; font-family:var(--texto); font-s
 .rank li.marca .relleno{background:var(--morado)}
 
 /* ---------- cifras clave ---------- */
-.cifras{display:grid; grid-template-columns:repeat(auto-fit,minmax(176px,1fr)); gap:0; border:1px solid var(--linea); margin:26px 0 12px; background:var(--papel)}
+.cifras{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(176px,100%),1fr)); gap:0; border:1px solid var(--linea); margin:26px 0 12px; background:var(--papel)}
 .cifra{background:var(--papel); padding:19px; display:block; border-left:1px solid var(--linea); border-top:1px solid var(--linea); margin:-1px 0 0 -1px; text-decoration:none; color:inherit; cursor:pointer; transition:background .12s}
 .cifra:hover{background:var(--morado-tenue)}
 .cifra:hover .ir{color:var(--morado)}
@@ -274,7 +274,7 @@ tfoot td:first-child{text-align:left; position:sticky; left:0; background:var(--
 .barras .b[data-k]:hover .relleno{background:linear-gradient(90deg, var(--morado), var(--morado-medio))}
 .barras .v{color:var(--tinta-3); font-variant-numeric:tabular-nums; white-space:nowrap}
 .barras .v b{color:var(--tinta); font-family:var(--media); font-weight:400; font-size:14.5px}
-.dos-columnas{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:34px}
+.dos-columnas{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr)); gap:34px}
 .dos-columnas figure{display:flex; flex-direction:column; margin-top:0; height:100%}
 .dos-columnas .lienzo{flex:1}
 
@@ -307,13 +307,23 @@ ol.fuentes li{margin-bottom:10px}
 
 /* ---------- movil ---------- */
 @media (max-width:1000px){
+  /* en el movil la barra solo lleva el apartado en curso y el boton */
+  .barra{padding:0 14px; gap:10px}
+  .barra .doc,.barra .sep,.barra .ed{display:none}
+  .barra .aqui{font-family:var(--media); font-size:13px; opacity:1}
+  .btn-barra{margin-left:auto}
+  .lienzo{padding:12px}
+  .guia{padding:15px 17px}
+  .guia ul{padding-left:17px}
+  .ficha-tabla{padding:16px 15px}
+  .ficha-tabla .nom{font-size:22px}
   .envoltorio{grid-template-columns:1fr}
   nav.indice{position:static; height:auto; border-right:0; border-bottom:1px solid var(--linea); padding:18px 20px 14px}
   nav.indice ol{display:flex; flex-wrap:wrap; gap:2px 4px}
   nav.indice a{border-left:0; border-bottom:3px solid transparent; padding:5px 7px}
   nav.indice a.activo{border-left:0; border-bottom-color:var(--morado)}
   nav.indice .pie{display:none}
-  main{padding:0 20px 80px}
+  main{padding:0 16px 80px}
   section + section{margin-top:72px}
   .abre{grid-template-columns:48px 1fr; gap:16px}
   .abre .num{width:48px; height:48px; font-size:24px; line-height:48px}
@@ -328,61 +338,160 @@ ol.fuentes li{margin-bottom:10px}
   .ficha dt{border-bottom:0; padding-bottom:0; background:#fff}
 }
 
+/* ---------- portada e indice, solo en papel ---------- */
+.solo-papel{display:none}
+
 /* ---------- impresion ---------- */
 @media (prefers-reduced-motion:reduce){
   .barras .relleno,.rank .relleno{transition:none}
 }
 
 @media print{
-  @page{margin:16mm 14mm}
+
+  /* ---------------------------------------------------------------
+     El documento en papel. No es la pantalla impresa: cambia la caja,
+     la medida, la jerarquia de titulos y la justificacion.
+     --------------------------------------------------------------- */
+  @page{size:Letter; margin:24mm 23mm 20mm 23mm}
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+
+  /* fuera todo lo que solo sirve en pantalla */
+  nav.indice,.barra,.controles,.pista-uso,.guia,.cifra .ir,.ficha-tabla,.ficha-mun{display:none}
+  .envoltorio{display:block; max-width:none; padding-top:0}
+  main{padding:0}
+
+  /* portada e indice de papel */
+  #portada{display:none}
+  .solo-papel{display:block}
+  #portada-papel,#indice-papel{page-break-after:always; page-break-before:avoid}
+  #portada-papel{display:flex; flex-direction:column; min-height:235mm}
+  #portada-papel .logos{margin:0 0 auto; padding-bottom:20px; border-bottom:1px solid var(--linea)}
+  #portada-papel .centro{padding:0 0 10mm}
+  #portada-papel .pastilla{display:inline-block; background:var(--morado); color:#fff;
+    padding:13px 32px 15px 23mm; border-radius:0 32px 32px 0; margin-left:-23mm}
+  #portada-papel h1{font-family:var(--fina); font-size:33pt; font-weight:400; margin:0; line-height:1}
+  #portada-papel .sub{font-family:var(--fina); font-size:21pt; color:var(--morado);
+    margin:15px 0 0; line-height:1.2; max-width:24ch; text-align:left; hyphens:none}
+  #portada-papel .ed{font-family:var(--media); font-size:13pt; color:var(--morado); margin:16px 0 0}
+  #portada-papel .pie{margin-top:auto; padding-top:14px; border-top:2px solid var(--morado);
+    font-size:9pt; color:var(--tinta-2); line-height:1.65; text-align:left; hyphens:none}
+  #portada-papel .pie a{color:var(--morado)}
+
+  #indice-papel h2{font-family:var(--fina); font-size:23pt; font-weight:400; color:var(--morado);
+    margin:0 0 7px; padding-bottom:9px; border-bottom:2.5pt solid var(--morado)}
+  #indice-papel .qq{font-size:8.5pt; color:var(--tinta-3); margin:0 0 24px; text-align:left; hyphens:none}
+  .indice-papel{list-style:none; margin:0; padding:0; counter-reset:ip}
+  .indice-papel li{counter-increment:ip; margin-bottom:14px}
+  .indice-papel a{display:flex; align-items:baseline; gap:9px; text-decoration:none; color:var(--tinta)}
+  .indice-papel a::before{content:counter(ip) "."; color:var(--morado); font-family:var(--media);
+    font-size:10pt; min-width:17px}
+  .indice-papel .tt{font-size:12pt}
+  .indice-papel .pt{flex:1; border-bottom:1px dotted #c7bdac; transform:translateY(-3px)}
+  .indice-papel .pg{font-family:var(--media); font-size:10.5pt; color:var(--morado); font-variant-numeric:tabular-nums}
+
+  /* ---------------- caja de texto ----------------
+     La columna de texto es mas estrecha que la caja de la pagina: el renglon se
+     queda en unos ochenta y cinco caracteres, que es lo que se lee bien en papel.
+     Las figuras anchas si ocupan la caja entera. */
+  body{font-size:12pt; line-height:1.5; color:#1f1e1c}
+  p{text-align:justify; hyphens:auto; -webkit-hyphens:auto; margin:0 0 9pt;
+    orphans:3; widows:3; max-width:none}
+  .abre,.entradilla,.destacado,blockquote,.nota-pie,ol.fuentes,h3,h4{max-width:none}
+  figure:not(.ancho) figcaption{max-width:none}
+  /* los apartados no empiezan pagina a la fuerza: el texto corre y las planas se
+     llenan, como en el documento publicado. Lo que no se parte es el titulo ni
+     una figura. */
+  section{page-break-before:auto; margin:0}
+  section + section{margin-top:18pt}
+
+  /* ---------------- titulos de apartado ---------------- */
+  .abre{display:block; border-top:2.5pt solid var(--morado); padding:9pt 0 0;
+    margin:0 0 15pt; page-break-after:avoid; page-break-inside:avoid}
+  .abre .eti{display:none}
+  .abre > div{display:inline}
+  .abre .num{display:inline; width:auto; height:auto; line-height:1; background:none;
+    color:var(--morado); font-family:var(--media); font-size:19pt; text-align:left;
+    margin-right:9pt; vertical-align:baseline; font-size:21pt}
+  .abre .num::after{content:"."}
+  .abre h2{display:inline; font-size:21pt; letter-spacing:-.01em; line-height:1.15}
+
+  h3{font-family:var(--media); font-size:13pt; margin:14pt 0 5pt; page-break-after:avoid}
+  h4{font-size:9.5pt; letter-spacing:.1em; margin:16pt 0 6pt; page-break-after:avoid}
+
+  /* entradilla y frase destacada, como en un documento */
+  .entradilla{font-family:var(--fina); font-size:14pt; line-height:1.38; color:var(--tinta-2);
+    max-width:none; margin:0 0 11pt; text-align:left; hyphens:none}
+  .destacado{font-family:var(--fina); font-size:14pt; line-height:1.35; color:var(--morado);
+    border-left:2pt solid var(--morado); padding:1pt 0 1pt 11pt; margin:0 0 13pt;
+    max-width:none; text-align:left; hyphens:none; page-break-inside:avoid}
+  .destacado b{font-family:var(--media)}
+  .abre + .destacado,.abre + .entradilla{page-break-before:avoid}
+  .destacado + .entradilla{page-break-before:avoid}
+  blockquote{background:var(--arena-tenue); border-left:2pt solid var(--arena);
+    padding:11pt 14pt; margin:12pt 0; font-size:11.5pt; line-height:1.45; max-width:none;
+    text-align:left; hyphens:none; page-break-inside:avoid}
+  blockquote cite{font-size:8.5pt; margin-top:7pt}
+  .nota-pie{font-size:9pt; line-height:1.45; text-align:justify; hyphens:auto; max-width:none}
+  sup.nota{font-size:7pt}
+  ol.fuentes{font-size:10pt; line-height:1.5; max-width:none; padding-left:16pt}
+  ol.fuentes li{margin-bottom:6pt; text-align:justify; hyphens:auto}
+
+  /* ---------------- figuras ---------------- */
+  .ancho{width:100%; max-width:none}
+  figure{margin:13pt 0 0; page-break-inside:avoid}
+  .lienzo{padding:9pt; border:.75pt solid var(--linea)}
+  figcaption{font-size:9pt; line-height:1.4; margin-top:6pt; max-width:none;
+    text-align:justify; hyphens:auto; page-break-before:avoid}
+  .cifras{grid-template-columns:repeat(5,1fr); margin:13pt 0 7pt; page-break-inside:avoid}
+  .cifra{padding:9pt 10pt}
+  .cifra .n{font-size:17pt}
+  .cifra .et{font-size:9pt; margin-top:6pt}
+  .cifra .q{font-size:7.5pt; margin-top:2pt}
+  .dos-columnas{gap:13pt 20pt}
+  .comparativa{gap:20pt}
+  .rank li{margin-bottom:8pt}
+  .rank .fila{font-size:9.5pt}
+
+  .barras{font-size:9pt}
+  .barras .b{margin-bottom:8pt}
+  .barras .pista{height:9pt}
   .barras .relleno,.rank .relleno{width:var(--w) !important; transition:none}
+
+  /* ---------------- cartografia ---------------- */
+  .mapa-caja{grid-template-columns:1fr 46mm; gap:9pt}
+  svg.mapa{max-height:none; width:100%}
+  svg.mapa text{font-size:16px}
+  .leyenda{font-size:8.5pt}
+  .leyenda .titulo{font-size:7.5pt}
+
+  /* ---------------- cuadros ---------------- */
+  .tabla-caja{max-height:none; overflow:visible; border:0}
+  table{font-size:6.8pt; width:100%}
+  thead th{position:static; padding:3px 2px; font-size:5.8pt; white-space:normal; line-height:1.2}
+  thead th:first-child{position:static}
+  tbody td{padding:2px 3px; overflow:hidden; text-overflow:ellipsis}
+  tbody td:first-child,tfoot td:first-child{position:static; max-width:118px; overflow:hidden}
+  tfoot td{padding:4px 3px}
+  #matriz tfoot{display:table-row-group}
+  #matriz-figura,#matriz-figura .tabla-caja,#matriz{page-break-inside:auto}
+  #matriz thead{display:table-header-group}
+  #matriz tr{page-break-inside:avoid}
+
+  /* ---------------- ficha de indicador ---------------- */
+  .ficha{page-break-inside:avoid}
+  .ficha .cab{padding:8pt 12pt; font-size:11pt}
+  .ficha dl{grid-template-columns:46mm minmax(0,1fr)}
+  .ficha dt{padding:6pt 12pt; font-size:7.5pt}
+  .ficha dd{padding:6pt 12pt; font-size:9.5pt; text-align:left; hyphens:none}
+  .semaforo{font-size:8pt}
+  .semaforo span{padding:3pt 9pt}
+
+  /* impresion de una sola figura */
   body.imprimiendo main > section{display:none}
   body.imprimiendo main > section.imprime-sec{display:block; page-break-before:avoid}
   body.imprimiendo .imprime-sec > *{display:none}
   body.imprimiendo .imprime-sec > figure.imprime{display:block}
-  body.imprimiendo .imprime .controles{display:none}
-  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
-  nav.indice,.controles,.pista-uso,.barra,.guia,.cifra .ir,.ficha-tabla{display:none}
-  .envoltorio{display:block; max-width:none; padding-top:0}
-  main{padding:0}
-  body{font-size:10.5pt; line-height:1.5}
-  p,li,dd,dt{font-size:10.5pt}
-  .entradilla{font-size:13.5pt; line-height:1.35}
-  .nota-pie,figcaption{font-size:8.5pt}
-  .cifra .n{font-size:20pt}
-  .cifra .et{font-size:10pt}
-  .cifra .q{font-size:8.5pt}
-  .barras{font-size:9pt}
-  .ficha dt{font-size:8pt}
-  .ficha dd{font-size:9.5pt}
-  section{page-break-before:always}
-  section.portada{page-break-before:avoid}
-  section + section{margin-top:0}
-  .ancho{width:100%; max-width:none}
-  .lienzo{padding:10px; border-color:#ccc}
-  .mapa-caja{grid-template-columns:1fr 210px; gap:14px}
-  svg.mapa{max-height:none; width:100%}
-  svg.mapa text{font-size:17px}
-  .ficha-mun{display:none}
-  .tabla-caja{max-height:none; overflow:visible; border:0}
-  thead th{position:static}
-  tbody td:first-child,tfoot td:first-child{position:static}
-  table{font-size:6.8pt; width:100%}
-  thead th{padding:3px 2px; font-size:5.8pt; white-space:normal; line-height:1.2}
-  tbody td:first-child,tfoot td:first-child{max-width:118px; overflow:hidden}
-  tbody td{padding:2px 3px; overflow:hidden; text-overflow:ellipsis}
-  tfoot td{padding:4px 3px}
-  #matriz tfoot{display:table-row-group}
-  .destacado{font-size:17pt}
-  .abre h2{font-size:22pt}
-  figure,.ficha,.cifras,.abre,.comparativa{page-break-inside:avoid}
-  .cifras{grid-template-columns:repeat(5,1fr)}
-  .cifra{padding:11px}
-  /* el cuadro de 217 municipios si debe repartirse entre paginas */
-  #matriz-figura,#matriz-figura .tabla-caja,#matriz{page-break-inside:auto}
-  #matriz thead{display:table-header-group}
-  #matriz tr{page-break-inside:avoid}
-  figcaption{page-break-before:avoid}
+  body.imprimiendo .solo-papel{display:none}
 }
 </style>
 </head>
@@ -414,6 +523,37 @@ ol.fuentes li{margin-bottom:10px}
 
 <main>
 
+<section class="solo-papel" id="portada-papel">
+  <div class="logos">
+    <img src="data:image/png;base64,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" alt="Gobierno del Estado de Puebla">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcwAAABgCAMAAACnrLKVAAAAkFBMVEVhVmB1JHZgW194KipgWGD/AP8AAP//AAB1dRIJCXpgVGT//wAmbCYfb28A//9VVaqqqqqqqlUAAABcW1pWVlZcTGJ/f38+Pj5jYmFaWVlbWllbWlliUWhbWlhaWVhbWVlhYF5gXl1dTGNcTGI+Pn5mZmZcTWNQSVBcTGJcTGJ/fz9bTGL///9gTmZYSmVjVVUnm1YaAAAAMHRSTlMeBJ0EWwEBAQMC1QEFBQEDAwMA9wf7AgT+LI6w/tBOcP7+0nEEBrEOT5AEMgH9FxKZqFijAAAYEklEQVR42u1di3ajuLLFST+me845916oSAbMw04ITuJ0///fnapSSUg8bEg7Hfdcs9ZkOkSA0FZJ9dxE8fHj8wP9jPZPj7s7c+we7/cRnlMQX4/LOqKjf/2CgKnoaXe32WxeBczXzebu7vGeLrzC+QeBiWD9uN9tCL3egace93CF848BU8Vxe3M3gqTFc3evr2j+GWDqWN/fbTrousODc38Vzj8BTBW/fN90i+ru8el+v3/Z7++fHu+cuG42Ty2ifj0uGkxcYq1YvuL2+ClS/jUv9zsrs5vvL1c0LxtMiOHRorW7/8GnHh4AD/3wwLi+PAmcm9f760p7yWBC3O4Eqrv7FuVUq/DvZHxGDs6nK5qXC6ayWL6+3qBU6s9jbRC/6MaheV1pLxTMlcWSldVJmFaa9lWL5sN1KC8STGjMfrl5PKGpKhXvzVK7ub+ieZFg6vhJsISTe+HK2i+b/XXfvEAwIb7fyNL5RZ28XMc/RFX6EavraF4YmCqOzDb4GMOXGddrbP8q7a+jeWFgQswb5mb3Q61m3eAhfnmVbfOK5mWBCfHerJrR7FVzJevy3Y8vq+t4XhKY34C3QNRn5munDyLMV2vzssDURspwA1xgaaj4x51I87frgF7SMmt005dFqumDTIGZoqnwuMCRUBrgnwSm7JiLna2ryIrmycMO2OGfsCRf2qSMRlTZhYLZrc77U6JJt9WQpinIL5eDS5zmeZ4u6JSKofheXZQKHwpTKyamWjoS9kI4hWWZFQkdeQXvNw6wXOwhLtbrbMlCi/An6+yilL4oELD9PAEbGQoj0j9Ozv5kva4RS/xZlBckmzqutkm+VJaT+nLBnIIEVg9jhx6bBnDi7ZMiK9O0rEg+03dCE8pq4a2pa9sCFoN5wZIZr3avw8Vy3qi0M4InUGyTqpV/Z4hm+05Ctl6Xy9ZwFec1zi3454ApbtkeIojlp/un0cO79l8x2TRHN01eyTJSgPDAu+ZJXb3HUOBzkmQZmBBXNV6i/0GSaV15L/5AYJLebjN+3IFvalLcbLODYyOWb5PUFjXAAZJtHt++0/a3UDKhWA7LZYMptn+wZUL8MpUFHUhwd+3n6bcv6uLWx3adgG+yy49QLe2f1ZpPq8k2SmsCU7fau0zTBcF9FM2qgz2jIAV1pHXfu0A/mj6Y3Kugax8KppEuvzdfmt0UlrvVakyq1ZHp74OJAvQ9h/jgCiGGW/T4P8MndL8c3L9KXAHm7PowaQufqNmQIwATTtz2N4OpWZnd7LzXIS114nj80UuZ5gywlyOvolCDbUadJngurfKiyLNSd0+HkbNQoX2KxmpeZHyK2mTcJrVrX1XlSZJVeJTOui9Nm9JbIj+VeJ5uT3rPz+qT1X9HWvcO26kYPDDdZVV6IXvmY1+JQYG7eRw7nvbhbT4bZ/sx2wTX1WSLHpOhvCnSbdd8bAtnVICxSv2ziMF2naZFUtfrPIagTZIDz76MDVk+Vcjdy6KW++TSu2fUeAtUlOp1jYqvv2CGrcdmXtfVqgMT8LItn66T7MPs50Cbfdy8NWWgA1NPg1nWpGYOsnARoqJGk72qMs/6xFFNtvbs1pwlnSOpivU2KVAyyYVUsuXKwlgXjaIzNznepUDfXJ7JnEjoNiXZtjgFlAOzqtfYkOeJA7NrnXWtwxm5Np3CSZQ4pwHE2ZY7gqfpVupCwURNYeR4gMVgkjGH72/WQx9PRfZnxjeM0PosnkUIEVhzFuUWLXoLZoIwpE38xf5amTY5DSIM90xFSnQpm3YixiSBSaCV+MtXH0wVF2Fr1bdhZAmg5d2ByaeLUjbSpC4/aN88vswu0NOjGUl6kPMQ8vC7wmuc1bQ0oR5ImmouNiJjUPFZtkkZBR89usV/zMhrupLGnlrgOk7arJLdWYBClRcakmMz+s9kWBbpwMjgdTyLW7KFaWXoGcIH3CaTouUHor5lb6foND2cO4JdLC5IAeoncsHDKXfeLAWIDlzqal6n0k5tRIOzUGZ70iol61NgK0SANQ4bD7aMupzmJdFKY0PWJY99aGceUIJurHULidlqDZhp3EAPzG+kTpnWh0C/CUzYRhYU20Abn4PtSL59N0flctNEL1PVZ5sm4jfFLY3UhLy0A0QSoFoKWSOkZL90w6Z9lzbIqNuYiCaRTm8bvrIB6/Yedxp8VSScRQAmqCnz/8CtLfThRtEMnQZkQWPXuSOt9nr+8U6DKF6FWEb340d73OEwZaRBisoFaTzQQdK1KOqE1VR2ltqZ8cwB0MGoF2tvQYOk5rEfgKmVi2yFYMZjYHatHwZgGtHuX6WMDHdm7mB5/jh33qbvznu8m3DnRf00eFyiZ6YakPawZqWGYcNAij0YTEWgDqMYPTARvqK7MCUw1ZhkskFqmpwGk50PP4PW4493v5nlvutH9U5O50VgrkQj9d10tBdOu/O8Hn/ezVeeeJ0sE6t+mmi1dzQcxa+LwVofjCZrI8GxHpdMmjr4jG2NltH2NJgmfs6t6xBMQq3DyV2lSX0OO/LxYEo6V5BooGDanedVU4v+czwEpsC/L6GJMvh1CCaD2CZ1cdy3rQZgbsf3TLJa2KIsihlgdq0XgFn3OvJBtkk0UjIUOX2WV97xRXbXeomVdst8mf8S2tobvEtC6xmx1pF7HMwD75KB9RuNRE1UU5ANmJI//q+TeyYqYGhImtZtf5mdBhPnEUReR/Qlpo38T3z/fTd23Ox7We0kwK93x1LaIf2UBg/LWOvjPXM4Bf4uwrMA43vmqRAYhaqTLJ6pAJE30LVui/E983awZ7LBeXEJXWAW0FnmyOcgUHaqgppf3R8bO+aszZZK9921Y9baQJvd8v56NJ5J7iWIG251WjKxdaGk9QDMQ8+1nnbWb51fQpreaKpldLJnYRobmPX5uP+HXTR+QIZNEkWJAVsPoDRqRG59BT+/qXAsQzA1O+o6T1IKzRiY3kD/3wkwBRbtItYD08QzhpRynWlownTRnvQnXFAS9OPSbBgjmLuHo3tkRlkjnRPPuMCMHoM+crBeldq40MkDJDnmaI+TVOsBmKhD5c7xUgqEHpiK3IwIj5LbxHPAzMwqAYd4YGca69e6k+LOTcEzr7XeybUxrj56mZW6odeXRWjayqHjuiz7VUvjg9UcSjJDwekkGacI4EMrUQW/kiC7s5nx2PaX2cbdEdvkWzOGjHEZ32rtnIXsTDU3z3V7DMywdW1a+4Ef6pS8AYXi5A1SjvaYjsDiPL93Kxwyorlbkg1MqSV3p90/HFpIMnkgxiFNJISFxwZTWhxAMxLGdDFnMWpizvYVILYJKhtZEbOVZ41JgWUHME6KSqzNtf3D5J55KBIJmqQUFBhk0upiK3cDjGZ2URO6dcmrPEK8vYCoiWdXopDNrrX8ApG9Rp9AE3dJ9OJh1I/8eXXhRS4pxz3LyG1rx5gz5sxZtOALF8/0JZPvaNusczsDSecxcdDULL8UoMSQ57ogKAj8KTBxetCE67XuLy9FRTdf15lLAwOKB2EQ1XT2EuKZQbHt/IV2JdrPDk6/QllImB4jJ1nr5RQULl/AyzQoCy+LQI15xIHCMNImA1/nNedS2iirrkWJmQVrPEnxzO2onem1bm3rXiDdZBSsMX7p5fQ1GHOVCz+u/mSiDP71rp3ZJVs4PYdvRMUa57zJoIE4yPYpXSaPd/ZfXVqNnG3Ksper1VKbvJd6Q8k9uAJY77y5C71qmXM09W/KAfK625TWBjatzf1UZVr3X4EaZOVtrErfcoYqk4eqS+E0+KKEoGI3D81VvH+dz7kGE/8ez8ODGWG40aQ4Nd4E5qnmx1uriSy8C8vOCxdaonSC+VjuIjWzQIvCfjBISuXzMMyb5cYqDnNaT7RByTN3O9hEV9fCudqUDsPO3fVjrUMliN6Aexo8Fe9I5/VFkTo9WFInlM0TWtAKBMvlJZ3X47eA6XSgze7leG0wkedJ0ytB14UydLX2oxfITxrm0fUK/Rwp7ZU671JJnVovgrl5fOn7Yb1dfn/3z8VSmVK1jz6Wla5EHNF66Yw7S09qyYO5cE/D537lTLwXsXx9vZ8dVz8rowNAM356/orfjrd1Z+HPUgQi+vyM2/I6LB8drTd+wGRlJgkWUK9WZqpE+52De/8xcqmLkYzzRdV55IUbc6OiEgxRWnL85mNVgdCSPQ3mnRfz6rB8Qsl7dZ9I2D3t/eStl/1j9/0EtGAeZpe03nR1X+8GZrIAzKCq0GPRyE0qS5G9LQEW3r4C+bYNTbZ6SQ6uSUQ3zrsOS9wEH+L2sfvihfkWBh30UTBXsskqEsxOFMnWZ0wPngSz/jUwbRZQQmVFycdyw1Ae0oLkMA/MAEvGCNfS15Gv1LhTd6gffVHxhYH5S5LJeYGGRSMtc060gzcQZLyZSQW5OyDo3xJ6hg7MHpboEkDH56fdVOH0K0O55E3/EDAx/ux89mWSLOWtMPUqb8y17A8REk1VS/dMAnOApXzYzdsf/e+A4T4aLdT2/gQwQYKhxmXXcDh7OZhvTmn/xSGyYLYjWIo5Gd0/mm3T20CfPq0WGxrHevoGjeFdwLQ5g85G4XSw5WRPZwJTwSJyRgum5VofOABY+PCDUfQJMD6ezLdQ48VMDP2eGic2l966gjClfYB133r+2yedCMA0Fbx4yxBM077vLuezJHgDMHmV/ek0bi7ElnX21mdG0d7sAx3apprA1JIcM9kN83LSE3vpX5qGSOPLQvAc/azDqa+D15b7C5hP0ctu8psWynwwSvzvL17vfgVMk2TQWPKCFE4HppogBBWACd0PD0xw/CSDyJqy9aIjYHKevQubn2BHVMPZwpI5aNJMBOdCz0fWlZnFM0OKjQrtzM2d+z6JnnArrdS9KQ3CpCUV//IaoiQezaHnrxltVHTqprIG7V/4S+Yxe5jGnuEXSiazRhR52bRBAQOfLYIQM8hZevDInslkRSODkGZZZ78D1nz63I54WD4LbJdxJksmwXETz7bdsB1O+eVsT6QT+PqUxkZHaZ9Tcoezyp8b3ciYYbEPj6ZrgeIRhuCjtE0LwFSSKVJzngXmcGA+Kg6hN7jPfmtDYLHlbA47Hh6YyrFGrD3WCMotoqtqYl0MslFqmxkysmcyIWKwwEtaZ8fhhp2vRV8lbsetx35BSURkpPIT7L1TemBN/3UJTuV6C5aWY2v8UPT6mE5jznmZpQ0xbm47pZoyRhPoXnvLDyf5jGZi6cBU5wBTOBGRBwLnLCVcZcTzwvlZPzsw7btz8hs2TksqBLTqSQemSY6TNKy6S5ljVoSSWReRveJvly3JDBSYkrVdm9Rd7/g3p/Nmg41E8jdhoK9ybUrHZ8G0tZYgI2+tG4PKV9hsTazbFNPMiGlDyDU4QZc9ZHgtXXlTSWYpvsyzKWbp9g5RsAyTAg1LJRV10UwszwsmD1nlHC6WEoIk8+dAMk3uZGPpH6w31YHps0ZgAqQFk7e/0nsE+Nm7nPhTDMCUhNCi1CGeAzDrytWmVL1nhHsm68eVZZ0RNZfBxHzCUtp3VBiZt1aIZD6bfMPGH0bD3uAGI+UXOUQzsTwrmEwCUDFrBOoFqLKY3PUJMOU6qhNrvYJqTzL5pRqTupw61ggeCXNV2okrI9wYXVMXw5oloIxrdsu2Xj7PBJjxLRWrKUy4bl1lAxfkV1zWZm2lAh9Iv7pSCQaTIdZ0qaVjUC3Qq0IDoHwwQ4MJzIsLe+ct57YYUoVoJpZnBZOFJhI9yptp42CSYpBJW9VRQVgwaZvDRa+xRoDbM6EaMFNQ6Q96AZrjjnZK0MYdr/BSCKfApBuLiaWwDkWN2JnYDVcQY0tVOMW7shaLcnOtr/ALmH5pEpieaCxGS2/seqS49P45monleZfZ1qu+ZJ0jjeEImM6CbqHc9sHsQdJ3GuBVwkyhLBtGt/uMO9pNqTXjWf07VsfAbKmcQVwemAV6mHQaUDcana+LpkMEuqrh9VEwrcV0K50uol4YnReDWEWbzSwszwumX1nZFfpMggm3zgAfghmUZgVg6o7Y0oGZeTGlCTCpZgg1Q1RMtjaVfgrMgyt+6PISBmB67oN8XYTiNRNMfxI2nbquXFKhgHlPrvTTWMYPn8+pzXo1cN0AT0smjcDPqCTlNxmCGVRr9SSzQS0Sj2RMiqfAtD4Z0qYSu29PKEBUzsCMYeQWUOPuPMUcqNSN4o1gdrQA2hRWgM+8gTeuDJgxYP7HjMSPb2eUTDAUaMj9Qz4gWqqaI9qssfMLY4AlfTAH9ScB10RemKoB2ikVUavlXm7BNJg2NwZL0XAZnQaTTb0tUvx5++vIMiur9tqZQovBlBmPlfz0Bs68bpk0kKs9GEzNWV1HIaJy/Wj14/GMYOK7WLazJrfsHFNgGuufSCM4A2A2mCbKXFhmCgYTZUMfDYH59mXDJlTKquM4mEZdovG0RH9DMNk3IN14K5j2Uw3ho8n9YYalEMkkV/o0fTNuC9HOxqLP6DSgqqkqxZ27JIse1BHJNHp8Zry35WwwhWvCGAiyJDOYapZkCppSwD0JJnfQfKyl7sxiD0z1NTcEGb+yZ8qIAXVonXTFvls7LKkFMz6auM5MQK94SGL0eZwG5KBLODcDnVyWBXZKMo14uOq/kT1zBMwhM4Xq8aWNhsBwA+pV1x4FE2yQivaBOh+CyTNRXlD/ApjaqH7EnZLZUIEj4PxfH8xZ3+A7K5jsuZNvD5XB4A7ABOPMalU3CCMKkBous4aZoq/NejXqI2CiqpjoBWB6QTBLadoHk5k2QFmr4o1gctdyb2Vin2LesbB8HJjsTU2JAi2CQbD4INnZ0tqYLpaWYAimCiBRbmBAJMUwijsHQ+3Ryhz6YMrQ657ZZOhhtnb0xazT2FMXvzjc2lv3oUaT2k4e+AUw5U+Z3fOZsKZSOl4KZpfHdS4PED/c+KEbZ6EZlQ1svFbIY4RbhgehHbEzRdHTssmJN0V5NCPgLbPCjymn+2DyYpa7QDP+X8RNvNu38n3B0sDFYR4JmJmPNoRggjBeivLZLJFM6IFpeqAdlZuwgWrP965mfCVxtefj/nxg2u/V+CVI8nkZIpDlsSQl0UkmLXVsetNaVt72JNOk7Twb16xljSD2iiK+bdiuZmaKyJbIp+ybxS/rZCOOdsOLIaQXLgfIcKJIPgF78yuRV3q0Y8hwy2wWO08Br/amBTPMqeNgEp1Jq2G4zDJXSultVLz7GMplIPp7DdF8MM5pZ6akUmP4loJgKYSEJIpZTFk9soMjClBLpBDbchA1cQl1HmsECJW0cE0kRcdpIUYRmvADMA0vRp46Fo3E6d+FGB+o6qxdOmtjz8YNcWv4jn+6ntXPWuZtygQM8XHJLM1ciqO0DyZrdL564PRCoDehQE00q3oFj2/6DGB2IY8ssR8h4BAFdBw6FAskooqsTDzHEH3cAgkhthTFr4jgyYuaKJPqWnE407JGmHCmUOMXBCxmFhzkEUxfgSGorB6GwJjnvxC6DD+cTD3lrqGAyGpnHiLcGmH4NaPulmKqEqUFd4PeIxUaSB9Ml7gN0mmaZcI09Bx76G274AmDy2+CPUJmsaqKln2L+GwKEHZTrGhEdWvdMgrXi9oSVeCSYrwZCuz3LpAUIudvXNBanVhXiIptgy03sPHM0twL50WTkgNGyN9tVgLKbbkeCYGl0gdm0YBOG6nEi0PM+kmXaTDGrZHLg0tSYy2lBVooQG05WsKJCwPJ7DpNXDkQSKbMw8jTZuybFBUlnq3XvxFMolLzGZ2BqrAiILZdz1JMK8qAIYakn16WF+YLCWkE5cOk9m7+R1ZtA3daMWeE4cLAv2eOkQLzheh0y/VBMBI0ifhuPRYNvl1mHg5OC7ePznzWeXNOHmg+X2MaUIaQ8Bal6U/Xuu1e5S/KC6JrjYOz+4NclPa/l2OeoxrsW/lbwQzpsb1sLCJcC/kfJhJpYcpNdZQCY4JKAk7XHZ6+3cQ3rsZazBq6JePbJ9NYCObdL4Ep9Ofi+dfuuyk+Sylv0PJ5BAj4K4S+wv41ICP2GninD9jUfEtDtD7nf7U3g4mgCWW0az3w27quKehxa/QaUwy1I73ouqFcNyAkYPW+adb1LvzD8Ff/TSje9xGSqRk88GZsUSdXToT4HQgqpptGLy/RS3wWMLeSiAM81T/wuy7/X8GMz/kh4e57PzG56Nblla7k94IJZyNtoOgUJ8uWJX+37eO+hXaVzDOgyQlwFCAXy+2vKxR/LJimSoITVMMvoF6PXzj+C6pYNbyykhSHAAAAAElFTkSuQmCC" alt="Secretaría de Igualdad Sustantiva">
+  </div>
+  <div class="centro">
+    <div class="pastilla"><h1>Atlas de Riesgo</h1></div>
+    <p class="sub">para la Georreferenciación de las Violencias contra las Mujeres en el Estado de Puebla</p>
+    <p class="ed">Edición 2026 · muestra de formato</p>
+  </div>
+  <div class="pie">
+    Secretaría de las Mujeres · Gobierno del Estado de Puebla<br>
+    Cifras del ejercicio 2022 · 9,879 registros · 217 municipios<br>
+    Versión interactiva: <a href="https://xgv85.github.io/atlas-riesgo-puebla-muestra/">xgv85.github.io/atlas-riesgo-puebla-muestra</a>
+  </div>
+</section>
+
+<section class="solo-papel" id="indice-papel">
+  <h2>Contenido</h2>
+  <p class="qq">Los títulos de este índice llevan enlace: al tocarlos, el documento salta al apartado.</p>
+  <ol class="indice-papel">
+    <li><a href="#presentacion"><span class="tt">Presentación</span><span class="pt"></span><span class="pg" data-sec="presentacion">—</span></a></li>
+    <li><a href="#panorama"><span class="tt">Panorama estatal</span><span class="pt"></span><span class="pg" data-sec="panorama">—</span></a></li>
+    <li><a href="#mapa"><span class="tt">Distribución territorial</span><span class="pt"></span><span class="pg" data-sec="mapa">—</span></a></li>
+    <li><a href="#matriz"><span class="tt">Matriz municipal</span><span class="pt"></span><span class="pg" data-sec="matriz">—</span></a></li>
+    <li><a href="#perfil"><span class="tt">Perfil de las mujeres que reportan</span><span class="pt"></span><span class="pg" data-sec="perfil">—</span></a></li>
+    <li><a href="#indicador"><span class="tt">Ficha técnica del indicador</span><span class="pt"></span><span class="pg" data-sec="indicador">—</span></a></li>
+    <li><a href="#fuentes"><span class="tt">Fuentes y notas metodológicas</span><span class="pt"></span><span class="pg" data-sec="fuentes">—</span></a></li>
+  </ol>
+</section>
+
 <section class="portada" id="portada">
   <div class="logos">
     <img src="data:image/png;base64,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" alt="Gobierno del Estado de Puebla">
@@ -427,7 +567,7 @@ ol.fuentes li{margin-bottom:10px}
     <span>Ejercicio de la muestra<b>2022</b></span>
     <span>Registros<b>9,879</b></span>
     <span>Municipios<b>217</b></span>
-    <span>Peso del archivo<b>0.19 MB</b></span>
+    <span>Peso del archivo<b>0.22 MB</b></span>
   </div>
 
   <div class="aviso">
