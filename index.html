@@ -192,7 +192,7 @@ select:focus,input:focus{outline:2px solid var(--morado); outline-offset:1px}
   box-shadow:0 2px 10px rgba(0,0,0,.18); max-width:230px;
 }
 .globo b{font-family:var(--media); font-weight:400}
-.globo .c{color:#d7c6e4}
+.globo .c{color:#d9a3b4}
 
 /* ---------- mapa ---------- */
 .mapa-caja{display:grid; grid-template-columns:minmax(0,1fr) 244px; gap:26px; align-items:start}
@@ -949,7 +949,7 @@ ol.fuentes li{margin-bottom:10px}
 (function(){
 "use strict";
 var D = JSON.parse(document.getElementById("datos").textContent);
-var ESCALA = ["#f3eaf4","#ddc6e4","#be9bcc","#96679f","#5d3e84"];
+var ESCALA = ["#f6f0f2","#dec6ce","#c091a0","#a25c72","#822341"];
 var SIN = "#d6d1c4";
 
 function num(n){ return n.toLocaleString("es-MX"); }
@@ -1147,23 +1147,30 @@ function rotulos(v){
     var y = estado.medida === "tasa" ? valor(b,v.k)/b.p : valor(b,v.k);
     return y - x;
   }).slice(0,14);
-  var puestos = [];
-  top.forEach(function(m){
-    if(puestos.length >= 5) return;
-    var c = cen[m.c];
-    var choca = puestos.some(function(q){
-      var d = cen[q.c];
-      return Math.abs(d[0]-c[0]) < 150 && Math.abs(d[1]-c[1]) < 60;
-    });
-    if(!choca) puestos.push(m);
-  });
-  top = puestos;
-  capaRotulos.innerHTML = top.map(function(m){
+
+  /* Se pintan los catorce candidatos y se miden de verdad: el ancho del rotulo
+     depende del nombre, asi que medir distancias entre centros no sirve. */
+  capaRotulos.innerHTML = top.map(function(m, i){
     var c = cen[m.c], x = valor(m, v.k);
     var cifra = estado.medida === "tasa" ? dec(x/m.p*100000,0) : num(x);
-    return "<text x=\""+c[0]+"\" y=\""+(c[1]-4)+"\" text-anchor=\"middle\">"+m.n+"</text>"+
-           "<text class=\"cifra\" x=\""+c[0]+"\" y=\""+(c[1]+17)+"\" text-anchor=\"middle\">"+cifra+"</text>";
+    return "<text data-i=\""+i+"\" x=\""+c[0]+"\" y=\""+(c[1]-4)+"\" text-anchor=\"middle\">"+m.n+"</text>"+
+           "<text data-i=\""+i+"\" class=\"cifra\" x=\""+c[0]+"\" y=\""+(c[1]+17)+"\" text-anchor=\"middle\">"+cifra+"</text>";
   }).join("");
+
+  var aceptadas = [];
+  for(var i = 0; i < top.length; i++){
+    var par = capaRotulos.querySelectorAll('[data-i="'+i+'"]');
+    if(par.length < 2) continue;
+    var r1 = par[0].getBBox(), r2 = par[1].getBBox();
+    var x0 = Math.min(r1.x, r2.x) - 7, y0 = Math.min(r1.y, r2.y) - 5;
+    var x1 = Math.max(r1.x + r1.width, r2.x + r2.width) + 7;
+    var y1 = Math.max(r1.y + r1.height, r2.y + r2.height) + 5;
+    var pisa = aceptadas.length >= 5 || aceptadas.some(function(q){
+      return !(x1 < q[0] || q[2] < x0 || y1 < q[1] || q[3] < y0);
+    });
+    if(pisa){ par[0].remove(); par[1].remove(); }
+    else aceptadas.push([x0, y0, x1, y1]);
+  }
 }
 
 function leyenda(c, n){
