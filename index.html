@@ -207,6 +207,25 @@ svg.mapa text.cifra{font-size:19px; fill:var(--morado)}
 .leyenda .fila{display:grid; grid-template-columns:18px 1fr; gap:10px; align-items:center; margin-bottom:6px}
 .leyenda .caja{width:18px; height:12px; border:1px solid rgba(0,0,0,.14)}
 .leyenda .titulo{font-family:var(--media); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--morado); margin-bottom:10px}
+/* ---------- los primeros municipios de lo que se este mirando ---------- */
+.top-mun{margin-top:22px; padding-top:16px; border-top:1px solid var(--linea)}
+.top-mun .titulo{font-family:var(--media); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--morado); margin-bottom:9px}
+.top-mun ol{list-style:none; margin:0; padding:0; counter-reset:t; font-size:12.5px}
+.top-mun li{counter-increment:t; display:grid; grid-template-columns:15px 1fr auto;
+  gap:8px; align-items:baseline; padding:3px 4px 3px 0; border-radius:3px; cursor:pointer}
+.top-mun li::before{content:counter(t); color:var(--tinta-3); font-size:11px;
+  font-variant-numeric:tabular-nums}
+.top-mun li:hover,.top-mun li:focus{background:var(--morado-tenue); outline:none}
+.top-mun li[aria-current="true"]{background:var(--morado-tenue)}
+.top-mun li[aria-current="true"] .n{color:var(--morado); font-family:var(--media)}
+.top-mun .n{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.top-mun .v{font-family:var(--media); font-variant-numeric:tabular-nums; white-space:nowrap}
+.top-mun .otra{display:block; color:var(--tinta-3); font-family:var(--texto);
+  font-size:11px; line-height:1.25}
+.top-mun .nota{margin-top:9px; color:var(--tinta-3); font-size:11.5px; line-height:1.4}
+@media print{ .top-mun li{cursor:auto} }
+
 .ficha-mun{margin-top:24px; padding-top:18px; border-top:1px solid var(--linea); font-size:13px}
 .ficha-mun .nombre{font-family:var(--media); font-size:17px; color:var(--morado); margin-bottom:2px}
 .ficha-mun dl{display:grid; grid-template-columns:1fr auto; gap:4px 10px; margin:12px 0 0}
@@ -748,6 +767,7 @@ ol.fuentes li{margin-bottom:10px}
         <div><svg class="mapa" id="lienzo-mapa" role="img" aria-label="Mapa municipal del estado de Puebla"></svg></div>
         <div>
           <div class="leyenda" id="leyenda"></div>
+          <div class="top-mun" id="top-mun"></div>
           <div class="ficha-mun" id="ficha-mun"></div>
         </div>
       </div>
@@ -775,6 +795,9 @@ ol.fuentes li{margin-bottom:10px}
     <p class="t">Cómo se usa este cuadro</p>
     <ul>
       <li><b>Escriba un nombre</b> para encontrar un municipio sin recorrer la lista.</li>
+      <li><b>Cambie «Qué se representa»</b> en el mapa para ver un tipo o una modalidad
+        concreta: el mapa se repinta y la lista de los primeros municipios, al lado, se
+        rehace con esa variable.</li>
       <li><b>Toque cualquier encabezado</b> —Psicológica, Familiar, Tasa…— para ordenar por esa
       columna; tóquelo otra vez para invertir el orden.</li>
       <li>El renglón de abajo <b>suma lo que esté a la vista</b>: si filtra, el total se
@@ -1122,6 +1145,7 @@ function pinta(){
   rotulos(v);
   marcaMunicipio();
   leyenda(c, base.length);
+  topMun(v);
   ficha(estado.clave);
   pieMapa(v);
 }
@@ -1172,6 +1196,52 @@ function rotulos(v){
     else aceptadas.push([x0, y0, x1, y1]);
   }
 }
+
+/* Los primeros municipios de la variable que se este mirando. Se da el dato por
+   las dos lecturas: la que manda, grande; la otra, debajo y en gris. */
+function topMun(v){
+  var caja = document.getElementById("top-mun");
+  var tasa = estado.medida === "tasa";
+  var lista = D.municipios.filter(function(m){ return valor(m, v.k) > 0; })
+    .map(function(m){
+      var x = valor(m, v.k);
+      return {m: m, casos: x, tasa: x / m.p * 100000};
+    })
+    .sort(function(a, b){ return tasa ? b.tasa - a.tasa : b.casos - a.casos; });
+  var n = lista.length;
+  if(!n){
+    caja.innerHTML = '<div class="titulo">Los primeros municipios</div>' +
+      '<div class="nota">Sin registros de esta variable en 2022.</div>';
+    return;
+  }
+  var filas = lista.slice(0, 10).map(function(r){
+    var p = tasa ? dec(r.tasa, 1) : num(r.casos);
+    var s = tasa ? num(r.casos) + (r.casos === 1 ? " caso" : " casos")
+                 : dec(r.tasa, 1) + " por 100 mil";
+    return '<li tabindex="0" data-clave="' + r.m.c + '"' +
+      (String(r.m.c) === String(estado.clave) ? ' aria-current="true"' : "") + ">" +
+      '<span class="n">' + r.m.n + "</span>" +
+      '<span class="v">' + p + '<span class="otra">' + s + "</span></span></li>";
+  }).join("");
+  caja.innerHTML = '<div class="titulo">Los primeros · ' +
+    (tasa ? "por cada cien mil mujeres" : "por número de casos") + "</div>" +
+    "<ol>" + filas + "</ol>" +
+    '<div class="nota">' + num(n) + " de los 217 municipios tienen algún registro de " +
+    (v.k === "tot" ? "violencia"
+      : v.et.indexOf("Tipo") === 0 ? "violencia " + v.et.slice(7).toLowerCase()
+      : "violencia en modalidad " + v.et.slice(12).toLowerCase()) +
+    ". Toque uno para verlo en el mapa.</div>";
+}
+
+document.getElementById("top-mun").addEventListener("click", function(e){
+  var li = e.target.closest("li[data-clave]");
+  if(li){ estado.clave = li.dataset.clave; pinta(); }
+});
+document.getElementById("top-mun").addEventListener("keydown", function(e){
+  if(e.key !== "Enter" && e.key !== " ") return;
+  var li = e.target.closest("li[data-clave]");
+  if(li){ e.preventDefault(); estado.clave = li.dataset.clave; pinta(); }
+});
 
 function leyenda(c, n){
   var u = estado.medida === "tasa" ? "por 100,000 mujeres" : "casos registrados";
